@@ -1,16 +1,24 @@
 const http = require('http'),
   fs = require('fs'),
-  util = require('util'),
+  path = require('path'),
   AESCrypto = require('./AESCrypto')
 
+var orgVdoPath = path.join(process.cwd(), 'assets', 'video.mp4')
+var vdoPath = path.join(process.cwd(), 'assets', 'video.mp4.enc')
+// const mp4Crypto = AESCrypto('password1')
+// const video = fs.readFileSync(orgVdoPath)
+// const encryptedVideo = mp4Crypto.encrypt(video)
+// fs.writeFileSync(vdoPath, encryptedVideo)
+
+
 http.createServer((req, res) => {
-  var path = 'video.mp4.enc'
-  var stat = fs.statSync(path)
+  var stat = fs.statSync(vdoPath)
   var total = stat.size
   const decrypt = AESCrypto('password1').decryptStream()
 
   if (req.headers['range']) {
     var range = req.headers.range
+    console.log(req.headers)
     var parts = range.replace(/bytes=/, "").split("-")
     var partialstart = parts[0]
     var partialend = parts[1]
@@ -20,8 +28,14 @@ http.createServer((req, res) => {
     var chunksize = (end - start) + 1
     console.log('RANGE: ' + start + ' - ' + end + ' = ' + chunksize)
 
-    var file = fs.createReadStream(path, { start: start, end: end })
-    res.writeHead(206, { 'Content-Range': 'bytes ' + start + '-' + end + '/' + total, 'Accept-Ranges': 'bytes', 'Content-Length': chunksize, 'Content-Type': 'video/mp4' })
+    var file = fs.createReadStream(vdoPath, { start: start, end: end })
+    res.writeHead(206,
+      {
+        'Content-Range': `bytes ${start}-${end}/${total}`,
+        'Accept-Ranges': 'bytes',
+        'Content-Length': chunksize,
+        'Content-Type': 'video/mp4'
+      })
     const encStream = file.pipe(decrypt)
     encStream.pipe(res)
 
@@ -30,16 +44,15 @@ http.createServer((req, res) => {
     })
 
     encStream.on('error', (err) => {
-      console.log('encStream', err)
-      res.end()
+      console.log('encStream: ', err.message)
+      //  res.end()
     })
   } else {
     console.log('ALL: ' + total)
     res.writeHead(200, { 'Content-Length': total, 'Content-Type': 'video/mp4' })
-    const allStream = fs.createReadStream(path).pipe(decrypt).pipe(res)
+    const allStream = fs.createReadStream(vdoPath).pipe(decrypt).pipe(res)
     allStream.on('close', () => {
       console.log('allstream', 'closed')
-
     })
   }
 }).listen(1337, '127.0.0.1')

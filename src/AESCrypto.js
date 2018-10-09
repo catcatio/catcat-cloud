@@ -1,8 +1,7 @@
 const crypto = require('crypto')
 const { md5 } = require('./cryptoHelper')
 
-module.exports = (passphrase) => {
-  const cipherAlgorithm = 'aes-256-cbc'
+module.exports = (passphrase, cipherAlgorithm = 'aes-256-cbc') => {
   const IV_LENGTH = 16
 
   let passphrase_hash = md5(passphrase)

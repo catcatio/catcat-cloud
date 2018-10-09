@@ -49,9 +49,3 @@ const start = async () => {
 }
 
 start()
-
-// const fs = require('fs')
-// const mp4Crypto = AESCrypto('password1')
-// const video = fs.readFileSync('video.mp4')
-// const encryptedVideo = mp4Crypto.encrypt(video)
-// fs.writeFileSync('video.mp4.enc', encryptedVideo)
