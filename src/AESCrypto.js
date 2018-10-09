@@ -4,7 +4,7 @@ const { md5 } = require('./cryptoHelper')
 module.exports = (passphrase, cipherAlgorithm = 'aes-256-cbc') => {
   const IV_LENGTH = 16
 
-  let passphrase_hash = md5(passphrase)
+  const passphrase_hash = md5(passphrase)
   const iv = new Buffer(passphrase_hash).slice(0, IV_LENGTH)
   const encrypt = (buffer) => {
     var cipher = crypto.createCipheriv(cipherAlgorithm, passphrase_hash, iv)
