@@ -7,10 +7,11 @@ const { md5 } = require('./cryptoHelper')
 
 const genFileKey = async () => btoa(await openpgp.crypto.random.getRandomBytes(32))
 
-const genUserKey = async (name, email, numBits = 1024) => await openpgp.generateKey({
-  userIds: [{ name, email }],
-  numBits
-})
+const genUserKey = async (name, email, numBits = 1024) =>
+  await openpgp.generateKey({
+    userIds: [{ name, email }],
+    numBits
+  })
 
 const start = async () => {
   const stellarSecretUser1 = 'SBM5K26NZA33KHVIYUM7B5DZNLIJOIHXIVNNLRK3HXGEFIF5QIMYYHFE'
