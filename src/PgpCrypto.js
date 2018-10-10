@@ -1,4 +1,5 @@
 const openpgp = require('openpgp')
+const btoa = require('btoa')
 
 const encrypt = async (data, masterkey, ...userKeys) => {
   let keys = []
@@ -25,7 +26,33 @@ const decrypt = async (encryptedText, user) => {
   return decryptedFileKey.data
 }
 
+const genUserKey = async (name, email, numBits = 1024) =>
+  await openpgp.generateKey({
+    userIds: [{ name, email }],
+    numBits
+  })
+
+const toKeyPair = async (privateKeyArmored) => {
+  const loadedKey = await openpgp.key.readArmored(privateKeyArmored)
+  const key = loadedKey.keys[0]
+  const revocationCertificate = await key.getRevocationCertificate();
+  key.revocationSignatures = [];
+
+  // return the same interface as generateKey
+  return {
+    key,
+    revocationCertificate,
+    privateKeyArmored: key.armor(),
+    publicKeyArmored: key.toPublic().armor(),
+  }
+}
+
+const genFileKey = async (length = 32) => btoa(await openpgp.crypto.random.getRandomBytes(length))
+
 module.exports = {
   encrypt,
-  decrypt
+  decrypt,
+  genUserKey,
+  toKeyPair,
+  genFileKey
 }
