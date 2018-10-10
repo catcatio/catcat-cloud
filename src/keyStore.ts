@@ -31,7 +31,7 @@ const savePGPKey = (name, email, publicKeyArmored,  privateKeyArmored) => new Pr
 
 })
 
-module.exports = {
+export {
   PGPKey,
   savePGPKey
 }

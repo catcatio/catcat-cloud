@@ -1,12 +1,11 @@
-const crypto = require('crypto')
+import * as crypto from 'crypto'
 
 const md5 = (dataStr) => crypto
   .createHash('md5')
-  .update(dataStr, 'utf-8')
+  .update(dataStr, 'utf8')
   .digest('hex')
   .toUpperCase()
 
-
-module.exports = {
+export {
   md5
 }

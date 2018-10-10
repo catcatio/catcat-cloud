@@ -7,8 +7,8 @@ const http = require('http'),
 const encrypter = () => AESCrypto('password1').encryptStream()
 const decrypter = () => AESCrypto('password1').decryptStream()
 
-var orgVdoPath = path.join(process.cwd(), 'assets', 'video.mp4')
-var vdoPath = path.join(process.cwd(), 'assets', 'video.mp4.enc')
+var orgVdoPath = path.join(process.cwd(), 'public', 'assets', 'video.mp4')
+var vdoPath = path.join(process.cwd(), 'public', 'assets', 'video.mp4.enc')
 // const mp4Crypto = AESCrypto('password1')
 // const video = fs.readFileSync(orgVdoPath)
 const video = fs.readFileSync(orgVdoPath)
@@ -56,7 +56,7 @@ http.createServer((req, res) => {
     encStream.pipe(res)
 
     encStream.on('close', () => console.log('encStream', 'closed'))
-    encStream.on('error', (err) => console.log('encStream: ', err.message) || res.end())
+    encStream.on('error', (err) => console.log('encStream: ', err.message), res.end())
   } else {
     console.log('ALL: ' + total)
 

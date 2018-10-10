@@ -1,7 +1,7 @@
-const AESCrypto = require('./AESCrypto')
-const pgpCrypto = require('./PgpCrypto')
-const { md5 } = require('./cryptoHelper')
-const { PGPKey, savePGPKey } = require('./keyStore')
+import AESCrypto from './AESCrypto';
+import * as pgpCrypto from './PgpCrypto';
+import { md5 } from './cryptoHelper'
+import { PGPKey, savePGPKey } from './keyStore'
 
 const queryOrCreate = async (name, email) => {
   const key = await PGPKey.findOne({ name }).exec()

@@ -49,7 +49,7 @@ const toKeyPair = async (privateKeyArmored) => {
 
 const genFileKey = async (length = 32) => btoa(await openpgp.crypto.random.getRandomBytes(length))
 
-module.exports = {
+export {
   encrypt,
   decrypt,
   genUserKey,
