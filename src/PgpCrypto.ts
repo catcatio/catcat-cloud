@@ -1,24 +1,32 @@
-const openpgp = require('openpgp')
+// tslint:disable-next-line:no-var-requires
 const btoa = require('btoa')
+import * as crypto from 'crypto'
+import * as openpgp from 'openpgp'
 
 const encrypt = async (data, masterkey, ...userKeys) => {
-  let keys = []
+  let publicKeys = []
   userKeys.push(masterkey)
-  for (let index = 0; index < userKeys.length; index++) {
-    keys = keys.concat((await openpgp.key.readArmored(userKeys[index].publicKeyArmored)).keys)
+  for (const key of userKeys) {
+    publicKeys = publicKeys.concat((await openpgp.key.readArmored(key.publicKeyArmored)).keys)
   }
 
   const privateKeys = (await openpgp.key.readArmored(masterkey.privateKeyArmored)).keys
   const encryptedData = await openpgp.encrypt({
-    message: await openpgp.message.fromText(data),
-    publicKeys: keys,
-    privateKeys
+    message: openpgp.message.fromText(data),
+    publicKeys,
+    privateKeys,
   })
-  return encryptedData
+  return (encryptedData as openpgp.EncryptArmorResult).data
 }
 
 const decrypt = async (encryptedText, user) => {
-  const prikeys = (await openpgp.key.readArmored(user.privateKeyArmored)).keys
+  const privateKeyArmored = `${user.privateKeyArmored}`
+  const prikeys = (await openpgp.key.readArmored(privateKeyArmored)
+    .catch((error) => {
+      console.error(error.message)
+      console.log(user.privateKeyArmored)
+      return null
+    })).keys
   const decryptedFileKey = await openpgp.decrypt({
     message: await openpgp.message.readArmored(encryptedText),
     privateKeys: prikeys,
@@ -29,30 +37,27 @@ const decrypt = async (encryptedText, user) => {
 const genUserKey = async (name, email, numBits = 1024) =>
   await openpgp.generateKey({
     userIds: [{ name, email }],
-    numBits
+    numBits,
   })
 
 const toKeyPair = async (privateKeyArmored) => {
   const loadedKey = await openpgp.key.readArmored(privateKeyArmored)
   const key = loadedKey.keys[0]
-  const revocationCertificate = await key.getRevocationCertificate();
-  key.revocationSignatures = [];
 
   // return the same interface as generateKey
   return {
     key,
-    revocationCertificate,
     privateKeyArmored: key.armor(),
     publicKeyArmored: key.toPublic().armor(),
   }
 }
 
-const genFileKey = async (length = 32) => btoa(await openpgp.crypto.random.getRandomBytes(length))
+const genFileKey = async (length = 32) => btoa(crypto.randomBytes(length))
 
 export {
   encrypt,
   decrypt,
   genUserKey,
   toKeyPair,
-  genFileKey
+  genFileKey,
 }

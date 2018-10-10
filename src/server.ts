@@ -1,20 +1,20 @@
-const http = require('http'),
-  fs = require('fs'),
-  path = require('path'),
-  crypto = require('crypto'),
-  AESCrypto = require('./AESCrypto')
+import * as crypto from 'crypto'
+import * as fs from 'fs'
+import * as http from 'http'
+import * as path from 'path'
+import AESCrypto from './AESCrypto'
 
 const encrypter = () => AESCrypto('password1').encryptStream()
 const decrypter = () => AESCrypto('password1').decryptStream()
 
-var orgVdoPath = path.join(process.cwd(), 'public', 'assets', 'video.mp4')
-var vdoPath = path.join(process.cwd(), 'public', 'assets', 'video.mp4.enc')
+const orgVdoPath = path.join(process.cwd(), 'public', 'assets', 'video.mp4')
+const vdoPath = path.join(process.cwd(), 'public', 'assets', 'video.mp4.enc')
 // const mp4Crypto = AESCrypto('password1')
 // const video = fs.readFileSync(orgVdoPath)
 const video = fs.readFileSync(orgVdoPath)
 // const encryptedVideo = encrypter()(video)
 const cipher = encrypter()
-var encryptedVideo = Buffer.concat([cipher.update(video), cipher.final()]);
+const encryptedVideo = Buffer.concat([cipher.update(video), cipher.final()])
 // const encryptedVideo = mp4Crypto.encrypt(video)
 fs.writeFileSync(vdoPath, encryptedVideo)
 
@@ -25,29 +25,28 @@ fs.writeFileSync(vdoPath, encryptedVideo)
 
 const port = 1337
 
-
 http.createServer((req, res) => {
-  var stat = fs.statSync(vdoPath)
-  var total = stat.size
+  const stat = fs.statSync(vdoPath)
+  const total = stat.size
   // const decrypt = AESCrypto('password1').decryptStream()
-  if (req.headers['range']) {
-    var range = req.headers.range
-    var parts = range.replace(/bytes=/, '').split('-')
-    var partialstart = parts[0]
-    var partialend = parts[1]
+  if (req.headers.range) {
+    const range = req.headers.range
+    const parts = (range as string).replace(/bytes=/, '').split('-')
+    const partialstart = parts[0]
+    const partialend = parts[1]
 
-    var start = parseInt(partialstart, 10)
-    var end = partialend
+    const start = parseInt(partialstart, 10)
+    const end = partialend
       ? parseInt(partialend, 10)
       : total - 1
-    var chunksize = (end - start) + 1
+    const chunksize = (end - start) + 1
     console.log(`RANGE: ${total} / ${start}-${end}=${chunksize}`)
 
     const head = {
-      'Content-Range': `bytes ${start}-${end}/${total}`,
       'Accept-Ranges': 'bytes',
       'Content-Length': chunksize,
-      'Content-Type': 'video/mp4'
+      'Content-Range': `bytes ${start}-${end}/${total}`,
+      'Content-Type': 'video/mp4',
     }
     res.writeHead(206, head)
 
@@ -56,7 +55,7 @@ http.createServer((req, res) => {
     encStream.pipe(res)
 
     encStream.on('close', () => console.log('encStream', 'closed'))
-    encStream.on('error', (err) => console.log('encStream: ', err.message), res.end())
+    encStream.on('error', (err) => {console.log('encStream: ', err.message); res.end()})
   } else {
     console.log('ALL: ' + total)
 

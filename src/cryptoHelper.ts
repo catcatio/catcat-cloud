@@ -7,5 +7,5 @@ const md5 = (dataStr) => crypto
   .toUpperCase()
 
 export {
-  md5
+  md5,
 }

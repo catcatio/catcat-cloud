@@ -1,59 +1,98 @@
-import AESCrypto from './AESCrypto';
-import * as pgpCrypto from './PgpCrypto';
+import * as fs from 'fs'
+import * as path from 'path'
+
+import { queryOrCreate } from './accountStore'
+import AESCrypto from './AESCrypto'
 import { md5 } from './cryptoHelper'
-import { PGPKey, savePGPKey } from './keyStore'
+import * as pgpCrypto from './PgpCrypto'
+import * as testEncruption from './testEncryption'
 
-const queryOrCreate = async (name, email) => {
-  const key = await PGPKey.findOne({ name }).exec()
-    .then(async (storedKey) => {
-      return !storedKey ? null : await pgpCrypto.toKeyPair(storedKey.privateKeyArmored)
-    })
-    .catch(err => {
-      console.error(err.message)
-      return null
-    });
+testEncruption.start()
 
-  return key || await pgpCrypto.genUserKey(name, email).then(async key => {
-    await savePGPKey(name, email, key.publicKeyArmored, key.privateKeyArmored)
-    return key
-  })
+const masterAccountName = 'SDKHAAERX2W2XXEWRIV6DHAWGWCDY7IEAP4LVE765NQE7F44E6JPKC4K'
+const fileInfo = {
+  name: 'movie.mp4',
+  isPrivate: true,
+  path: '/',
+  owner: 'SD6TQ6HAJTS5ZNVTKIEHU62BL6MDAP7CAPYRJY2WZ5RSH35GHWI63UMH',
+}
+
+const ipfsAdd = (data) => {
+  const ipfsAPI = require('ipfs-api')
+  const ipfs = ipfsAPI({ host: 'localhost', port: '5001', protocol: 'http' })
+  return ipfs.files.add(data)
+}
+
+const ipfsGet = (ipfsPath) => {
+  const ipfsAPI = require('ipfs-api')
+  const ipfs = ipfsAPI({ host: 'localhost', port: '5001', protocol: 'http' })
+  return ipfs.files.get(ipfsPath)
 }
 
 const start = async () => {
-  const stellarSecretUser1 = 'SAJ5VAFNI6XSUMLY7XZW5SIEEHVINOU7PGPB63UUXWC7NC7HRWH57VLB'
-  const stellarSecretUser2 = 'SC4NTEQUMAZU6C3BNVYTRLQDM5AZDJ7B4LGDNA3DK4EV2GCPZSEWBT3P'
-  const stellarSecretUser3 = 'SBVOMHZBNV5NX2LS5WSKAHBBJDPJ67UVR5HF6SHRC3SGIAZIHEV5FYHC'
-  const masterSecretUser = 'SCBVBQ2TYFCBK6DOYX3NU2QARTGGB5BIWMHB6KBECMNCBC3AWPJPHDQA'
+  const sourceFile = path.join(process.cwd(), 'staging', fileInfo.name)
+  const desFile = path.join(process.cwd(), 'staging', `out.${fileInfo.name}`)
+  const masterAccount = await queryOrCreate(md5(masterAccountName))
+  const ownerAccount = await queryOrCreate(md5(fileInfo.owner))
 
-  const masterkey = await queryOrCreate(md5(masterSecretUser), `${md5(masterSecretUser)}@example.com`)
-  const user1 = await queryOrCreate(md5(stellarSecretUser1), `${md5(stellarSecretUser1)}@example.com`)
-  const user2 = await queryOrCreate(md5(stellarSecretUser2), `${md5(stellarSecretUser2)}@example.com`)
-  const user3 = await queryOrCreate(md5(stellarSecretUser3), `${md5(stellarSecretUser3)}@example.com`)
-
-  const fileData = new Buffer("hello world!!", "utf8")
   const fileKey = await pgpCrypto.genFileKey()
-
+  console.log(fileKey)
   const aesCrypto = AESCrypto(fileKey)
+  const fileStream = fs.createReadStream(sourceFile)
+    .pipe(aesCrypto.encryptStream())
 
-  console.log('fileKey', '\n', fileKey)
-  console.log('original content', '\n', fileData.toString())
-  const encryptedFile = aesCrypto.encrypt(fileData)
-  console.log('encrypted content', '\n', encryptedFile.toString('hex'))
+  const ipfsResult = await ipfsAdd(fileStream)
+  console.log(ipfsResult)
 
-  const encryptedFileKey = await pgpCrypto.encrypt(fileKey, masterkey, user1, user2)
-  console.log('decrypted fileKey with master', '\n',
-    (await pgpCrypto.decrypt(encryptedFileKey.data, masterkey)).toString())
-  console.log('decrypted fileKey with user 1', '\n',
-    (await pgpCrypto.decrypt(encryptedFileKey.data, user1)).toString())
-  console.log('decrypted fileKey with user 2', '\n',
-    (await pgpCrypto.decrypt(encryptedFileKey.data, user2)).toString())
-  console.log('decrypted fileKey with user 3', '\n',
-    (await pgpCrypto.decrypt(encryptedFileKey.data, user3).catch(_ => 'FAILED')).toString())
+  // const fileKey = '3JHC16bSFDpB0Zvjhy+qUiE8eI1fZxVinNWBza2is3Y='
+  // const ipfsResult = [
+  //   {
+  //     path: 'QmQkQJetXZo5Q8ojkGp28XneoFaiKA75ndrcRgwmncGMcF',
+  //     hash: 'QmQkQJetXZo5Q8ojkGp28XneoFaiKA75ndrcRgwmncGMcF',
+  //     size: 17844139
+  //   }
+  // ]
+  const encryptedFileKey = await pgpCrypto.encrypt(fileKey, masterAccount, ownerAccount)
 
-  const decryptedFileKey = await pgpCrypto.decrypt(encryptedFileKey.data, user1)
+  // Get file and decrypt
+  const decryptedFileKey = await pgpCrypto.decrypt(encryptedFileKey, masterAccount)
   const aesCrypto2 = AESCrypto(decryptedFileKey)
-  const decryptedContent = await aesCrypto2.decrypt(encryptedFile)
-  console.log('decrypted content', '\n', decryptedContent.toString())
+  const outFileStream = fs.createWriteStream(desFile)
+  const ipfsGetResult = (await ipfsGet(`/ipfs/${ipfsResult[0].path}`))
+  if (ipfsGetResult[0].content instanceof Buffer) {
+    outFileStream.write(aesCrypto2.decrypt(ipfsGetResult[0].content))
+  } else {
+    ipfsGetResult[0].content.pipe(aesCrypto2.decryptStream())
+      .pipe(outFileStream)
+  }
+
+  return {
+    encryptedFileKey,
+    ipfs: ipfsResult,
+    // ownerAccount,
+    // masterAccount,
+    fileInfo,
+    ipfsGetResult,
+  }
 }
 
 start()
+  .then(console.log)
+  .catch(console.error)
+
+// [
+//   {
+//     path: 'QmWReYEf1PHSCC2LPXroRVD2T8rFDELMPqu57g1b4iDeGi',
+//     hash: 'QmWReYEf1PHSCC2LPXroRVD2T8rFDELMPqu57g1b4iDeGi',
+//     size: 17844139
+//   }
+// ]
+
+/*
+TODO: Producer submit a file
+- [X] upload file through staging
+- [X] gen FileKey
+- [X] encrypt file and sign with user key
+- [X] upload encrypted to ipfs https://github.com/ipfs/js-ipfs-api
+- [X] producer able to download decrypted file
+*/

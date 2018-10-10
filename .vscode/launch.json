@@ -5,12 +5,17 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Launch Program",
             "type": "node",
             "request": "launch",
-            "name": "Launch Program",
-            "program": "${workspaceFolder}/src/index.js",
+            "runtimeArgs": ["--nolazy", "-r", "ts-node/register", "--inspect-brk=49382", "${workspaceFolder}/src/index.ts"],
+            "program": "${workspaceFolder}/node_modules/.bin/ts-node",
+            "sourceMaps": true,
+            "cwd": "${workspaceRoot}",
+            "port": 49382,
+            "protocol": "inspector",
             "outFiles": [
-                "${workspaceFolder}/**/*.js"
+                "${workspaceFolder}/lib"
             ]
         }
     ]
