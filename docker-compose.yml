@@ -13,3 +13,15 @@ services:
     ports:
       - 8081:8081
     env_file: .env
+
+  ipfs:
+    image: ipfs/go-ipfs:latest
+    restart: unless-stopped
+    ports:
+      - 4001:4001
+      - 5001:5001
+      - 8080:8080
+    volumes:
+      - ${PWD}/ipfs_staging:/export
+      - ${PWD}/ipfs_data:/data/ipfs
+    env_file: .env
