@@ -1,7 +1,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 
-import { queryOrCreate } from './accountStore'
+import { getOrCreate } from './accountStore'
 import AESCrypto from './AESCrypto'
 import { md5 } from './cryptoHelper'
 import * as pgpCrypto from './PgpCrypto'
@@ -32,26 +32,26 @@ const ipfsGet = (ipfsPath) => {
 const start = async () => {
   const sourceFile = path.join(process.cwd(), 'staging', fileInfo.name)
   const desFile = path.join(process.cwd(), 'staging', `out.${fileInfo.name}`)
-  const masterAccount = await queryOrCreate(md5(masterAccountName))
-  const ownerAccount = await queryOrCreate(md5(fileInfo.owner))
+  const masterAccount = await getOrCreate(md5(masterAccountName))
+  const ownerAccount = await getOrCreate(md5(fileInfo.owner))
 
-  const fileKey = await pgpCrypto.genFileKey()
-  console.log(fileKey)
-  const aesCrypto = AESCrypto(fileKey)
-  const fileStream = fs.createReadStream(sourceFile)
-    .pipe(aesCrypto.encryptStream())
+  // const fileKey = await pgpCrypto.genFileKey()
+  // console.log(fileKey)
+  // const aesCrypto = AESCrypto(fileKey)
+  // const fileStream = fs.createReadStream(sourceFile)
+  //   .pipe(aesCrypto.encryptStream())
 
-  const ipfsResult = await ipfsAdd(fileStream)
-  console.log(ipfsResult)
+  // const ipfsResult = await ipfsAdd(fileStream)
+  // console.log(ipfsResult)
 
-  // const fileKey = '3JHC16bSFDpB0Zvjhy+qUiE8eI1fZxVinNWBza2is3Y='
-  // const ipfsResult = [
-  //   {
-  //     path: 'QmQkQJetXZo5Q8ojkGp28XneoFaiKA75ndrcRgwmncGMcF',
-  //     hash: 'QmQkQJetXZo5Q8ojkGp28XneoFaiKA75ndrcRgwmncGMcF',
-  //     size: 17844139
-  //   }
-  // ]
+  const fileKey = '3JHC16bSFDpB0Zvjhy+qUiE8eI1fZxVinNWBza2is3Y='
+  const ipfsResult = [
+    {
+      path: 'QmQkQJetXZo5Q8ojkGp28XneoFaiKA75ndrcRgwmncGMcF',
+      hash: 'QmQkQJetXZo5Q8ojkGp28XneoFaiKA75ndrcRgwmncGMcF',
+      size: 17844139
+    }
+  ]
   const encryptedFileKey = await pgpCrypto.encrypt(fileKey, masterAccount, ownerAccount)
 
   // Get file and decrypt

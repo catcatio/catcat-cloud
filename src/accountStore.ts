@@ -1,23 +1,27 @@
 import { PGPKey, savePGPKey } from './keyStore'
 import * as pgpCrypto from './PgpCrypto'
 
-export const queryOrCreate = async (name, email = null) => {
-  const key = await PGPKey.findOne({ name }).exec()
-    .then(async (storedKey) => {
-      // console.log('privateKeyArmored', storedKey.privateKeyArmored)
-      return !storedKey ? null : await pgpCrypto.toKeyPair(storedKey.privateKeyArmored)
-        .catch((error) => {
-          console.error(name, error.message)
-          return null
-        })
-    })
+export const get = async (name) => {
+  const storedKey = await PGPKey.findOne({ name }).exec()
+  if (!storedKey) {
+    throw new Error(`Account not found: ${name}`)
+  }
+
+  return await pgpCrypto.toKeyPair(storedKey.privateKeyArmored)
+}
+
+export const create = async (name, email = null) => {
+  const key = await pgpCrypto.genUserKey(name, email)
+  await savePGPKey(name, email, key.publicKeyArmored, key.privateKeyArmored)
+  return key
+}
+
+export const getOrCreate = async (name, email = null) => {
+  const key = await get(name)
     .catch((err) => {
       console.error(name, err.message)
       return null
     })
 
-  return key || await pgpCrypto.genUserKey(name, email).then(async (userKey) => {
-    await savePGPKey(name, email, userKey.publicKeyArmored, userKey.privateKeyArmored)
-    return key
-  })
+  return key || await create(name, email)
 }

@@ -1,4 +1,4 @@
-import { queryOrCreate } from './accountStore'
+import { getOrCreate } from './accountStore'
 import AESCrypto from './AESCrypto'
 import { md5 } from './cryptoHelper'
 import * as pgpCrypto from './PgpCrypto'
@@ -9,10 +9,10 @@ export const start = async () => {
   const stellarSecretUser3 = 'SBVOMHZBNV5NX2LS5WSKAHBBJDPJ67UVR5HF6SHRC3SGIAZIHEV5FYHC'
   const masterSecretUser = 'SCBVBQ2TYFCBK6DOYX3NU2QARTGGB5BIWMHB6KBECMNCBC3AWPJPHDQA'
 
-  const masterkey = await queryOrCreate(md5(masterSecretUser), `${md5(masterSecretUser)}@example.com`)
-  const user1 = await queryOrCreate(md5(stellarSecretUser1), `${md5(stellarSecretUser1)}@example.com`)
-  const user2 = await queryOrCreate(md5(stellarSecretUser2), `${md5(stellarSecretUser2)}@example.com`)
-  const user3 = await queryOrCreate(md5(stellarSecretUser3), `${md5(stellarSecretUser3)}@example.com`)
+  const masterkey = await getOrCreate(md5(masterSecretUser), `${md5(masterSecretUser)}@example.com`)
+  const user1 = await getOrCreate(md5(stellarSecretUser1), `${md5(stellarSecretUser1)}@example.com`)
+  const user2 = await getOrCreate(md5(stellarSecretUser2), `${md5(stellarSecretUser2)}@example.com`)
+  const user3 = await getOrCreate(md5(stellarSecretUser3), `${md5(stellarSecretUser3)}@example.com`)
 
   const fileData = new Buffer('hello world!!', 'utf8')
   const fileKey = await pgpCrypto.genFileKey()
