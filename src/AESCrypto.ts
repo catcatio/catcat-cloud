@@ -33,3 +33,10 @@ export default (passphrase, cipherAlgorithm = 'aes-256-cbc') => {
     decryptStream,
   }
 }
+
+export interface IAESCrypto {
+  encrypt: any;
+  encryptStream: any;
+  decrypt: any;
+  decryptStream: any;
+}

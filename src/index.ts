@@ -1,10 +1,11 @@
 import * as fs from 'fs'
 import * as path from 'path'
 
-import { getOrCreate } from './accountStore'
+import { accountStore } from './accountStore'
 import AESCrypto from './AESCrypto'
 import { md5 } from './cryptoHelper'
-import * as pgpCrypto from './PgpCrypto'
+import { IpfsStore } from './ipfsStore'
+import { pgpCrypto } from './PgpCrypto'
 import * as testEncruption from './testEncryption'
 
 testEncruption.start()
@@ -17,23 +18,12 @@ const fileInfo = {
   owner: 'SD6TQ6HAJTS5ZNVTKIEHU62BL6MDAP7CAPYRJY2WZ5RSH35GHWI63UMH',
 }
 
-const ipfsAdd = (data) => {
-  const ipfsAPI = require('ipfs-api')
-  const ipfs = ipfsAPI({ host: 'localhost', port: '5001', protocol: 'http' })
-  return ipfs.files.add(data)
-}
-
-const ipfsGet = (ipfsPath) => {
-  const ipfsAPI = require('ipfs-api')
-  const ipfs = ipfsAPI({ host: 'localhost', port: '5001', protocol: 'http' })
-  return ipfs.files.get(ipfsPath)
-}
-
 const start = async () => {
+  const ipfsStore = IpfsStore()
   const sourceFile = path.join(process.cwd(), 'staging', fileInfo.name)
   const desFile = path.join(process.cwd(), 'staging', `out.${fileInfo.name}`)
-  const masterAccount = await getOrCreate(md5(masterAccountName))
-  const ownerAccount = await getOrCreate(md5(fileInfo.owner))
+  const masterAccount = await accountStore.getOrCreate(md5(masterAccountName))
+  const ownerAccount = await accountStore.getOrCreate(md5(fileInfo.owner))
 
   // const fileKey = await pgpCrypto.genFileKey()
   // console.log(fileKey)
@@ -41,14 +31,14 @@ const start = async () => {
   // const fileStream = fs.createReadStream(sourceFile)
   //   .pipe(aesCrypto.encryptStream())
 
-  // const ipfsResult = await ipfsAdd(fileStream)
+  // const ipfsResult = await ipfsStore.add(fileStream)
   // console.log(ipfsResult)
 
-  const fileKey = '3JHC16bSFDpB0Zvjhy+qUiE8eI1fZxVinNWBza2is3Y='
+  const fileKey = 'qr+6n+leOw/p9EYvNo5RXru9QjAVwaW/ZztMeJDi4QA='
   const ipfsResult = [
     {
-      path: 'QmQkQJetXZo5Q8ojkGp28XneoFaiKA75ndrcRgwmncGMcF',
-      hash: 'QmQkQJetXZo5Q8ojkGp28XneoFaiKA75ndrcRgwmncGMcF',
+      path: 'QmQWmjaYBzKu3mfs86pLSES8c24zvWSBZ9fnXSp3eTqzqw',
+      hash: 'QmQWmjaYBzKu3mfs86pLSES8c24zvWSBZ9fnXSp3eTqzqw',
       size: 17844139
     }
   ]
@@ -58,7 +48,7 @@ const start = async () => {
   const decryptedFileKey = await pgpCrypto.decrypt(encryptedFileKey, masterAccount)
   const aesCrypto2 = AESCrypto(decryptedFileKey)
   const outFileStream = fs.createWriteStream(desFile)
-  const ipfsGetResult = (await ipfsGet(`/ipfs/${ipfsResult[0].path}`))
+  const ipfsGetResult = (await ipfsStore.get(`/ipfs/${ipfsResult[0].path}`))
   if (ipfsGetResult[0].content instanceof Buffer) {
     outFileStream.write(aesCrypto2.decrypt(ipfsGetResult[0].content))
   } else {
@@ -76,9 +66,9 @@ const start = async () => {
   }
 }
 
-start()
-  .then(console.log)
-  .catch(console.error)
+// start()
+//   .then(console.log)
+//   .catch(console.error)
 
 // [
 //   {

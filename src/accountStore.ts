@@ -1,27 +1,46 @@
+import * as openpgp from 'openpgp'
 import { PGPKey, savePGPKey } from './keyStore'
-import * as pgpCrypto from './PgpCrypto'
+import { pgpCrypto } from './PgpCrypto'
 
-export const get = async (name) => {
-  const storedKey = await PGPKey.findOne({ name }).exec()
+const get = async (id): Promise<IAccount> => {
+  const storedKey = await PGPKey.findOne({ id }).exec()
   if (!storedKey) {
-    throw new Error(`Account not found: ${name}`)
+    throw new Error(`Account not found: ${id}`)
   }
 
   return await pgpCrypto.toKeyPair(storedKey.privateKeyArmored)
 }
 
-export const create = async (name, email = null) => {
-  const key = await pgpCrypto.genUserKey(name, email)
-  await savePGPKey(name, email, key.publicKeyArmored, key.privateKeyArmored)
+const create = async (id): Promise<IAccount> => {
+  const key = await pgpCrypto.genUserKey(id)
+  await savePGPKey(id, key.publicKeyArmored, key.privateKeyArmored)
   return key
 }
 
-export const getOrCreate = async (name, email = null) => {
-  const key = await get(name)
+const getOrCreate = async (id): Promise<IAccount> => {
+  const key = await get(id)
     .catch((err) => {
-      console.error(name, err.message)
+      console.error(id, err.message)
       return null
     })
 
-  return key || await create(name, email)
+  return key || await create(id)
+}
+
+export const accountStore: IAccountStore = {
+  get,
+  create,
+  getOrCreate
+}
+
+export interface IAccountStore {
+  get: (id: string) => Promise<IAccount>;
+  create: (id: string) => Promise<IAccount>;
+  getOrCreate: (id: string) => Promise<IAccount>;
+}
+
+export interface IAccount {
+  key: openpgp.key.Key;
+  publicKeyArmored: string;
+  privateKeyArmored: string;
 }

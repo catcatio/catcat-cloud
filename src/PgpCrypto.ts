@@ -4,10 +4,10 @@ import * as crypto from 'crypto'
 import * as openpgp from 'openpgp'
 
 const encrypt = async (data, masterkey, ...userKeys) => {
-  let publicKeys = []
+  const publicKeys = []
   userKeys.push(masterkey)
   for (const key of userKeys) {
-    publicKeys = publicKeys.concat((await openpgp.key.readArmored(key.publicKeyArmored)).keys)
+    publicKeys.push((await openpgp.key.readArmored(key.publicKeyArmored)).keys[0])
   }
 
   const privateKeys = (await openpgp.key.readArmored(masterkey.privateKeyArmored)).keys
@@ -34,9 +34,14 @@ const decrypt = async (encryptedText, user) => {
   return decryptedFileKey.data
 }
 
-const genUserKey = async (name, email, numBits = 1024) =>
+const updateDecryptKey = async (encryptedData, masterkey, ...userKeys) => {
+  const decryptedData = await decrypt(encryptedData, masterkey)
+  return encrypt(decryptedData, masterkey, ...userKeys)
+}
+
+const genUserKey = async (name, numBits = 1024) =>
   await openpgp.generateKey({
-    userIds: [{ name, email }],
+    userIds: [{ name }],
     numBits,
   })
 
@@ -52,12 +57,22 @@ const toKeyPair = async (privateKeyArmored) => {
   }
 }
 
-const genFileKey = async (length = 32) => btoa(crypto.randomBytes(length))
+const genFileKey = (length = 32) => btoa(crypto.randomBytes(length))
 
-export {
+export const pgpCrypto: IPgpCrypto = {
   encrypt,
   decrypt,
   genUserKey,
   toKeyPair,
   genFileKey,
+  updateDecryptKey,
+}
+
+export interface IPgpCrypto {
+  encrypt: any;
+  decrypt: any;
+  genUserKey: any;
+  toKeyPair: any;
+  genFileKey: any;
+  updateDecryptKey: any;
 }

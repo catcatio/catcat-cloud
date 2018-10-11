@@ -6,18 +6,16 @@ mongoose.connect('mongodb://localhost', {
 })
 
 const pgpKeySchema = new mongoose.Schema({
-  name: String,
-  email: String,
+  id: String,
   privateKeyArmored: String,
   publicKeyArmored: String,
 })
 
 const PGPKey = mongoose.model('PGPKey', pgpKeySchema)
 
-const savePGPKey = (name, email, publicKeyArmored,  privateKeyArmored) => new Promise((resolve) => {
+const savePGPKey = (id, publicKeyArmored,  privateKeyArmored) => new Promise((resolve) => {
   const pgpKey = new PGPKey({
-    name,
-    email,
+    id,
     publicKeyArmored,
     privateKeyArmored,
   })
