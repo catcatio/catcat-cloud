@@ -25,3 +25,29 @@ services:
       - ${PWD}/ipfs_staging:/export
       - ${PWD}/ipfs_data:/data/ipfs
     env_file: .env
+
+  postgres:
+    image: postgres
+    restart: always
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_USER: root
+
+  # adminer:
+  #   image: adminer
+  #   restart: always
+  #   ports:
+  #     - 8082:8080
+
+  pgadmin:
+    image: dpage/pgadmin4
+    restart: always
+    ports:
+      - 8083:80
+    environment:
+      PGADMIN_DEFAULT_EMAIL: user@me.example.cam
+      PGADMIN_DEFAULT_PASSWORD: password
+
+

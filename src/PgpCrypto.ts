@@ -4,7 +4,7 @@ import * as crypto from 'crypto'
 import * as openpgp from 'openpgp'
 
 const encrypt = async (data, masterkey, ...userKeys) => {
-  const publicKeys = []
+  const publicKeys: any[] = []
   userKeys.push(masterkey)
   for (const key of userKeys) {
     publicKeys.push((await openpgp.key.readArmored(key.publicKeyArmored)).keys[0])
@@ -25,7 +25,7 @@ const decrypt = async (encryptedText, user) => {
     .catch((error) => {
       console.error(error.message)
       console.log(user.privateKeyArmored)
-      return null
+      return {keys: []}
     })).keys
   const decryptedFileKey = await openpgp.decrypt({
     message: await openpgp.message.readArmored(encryptedText),

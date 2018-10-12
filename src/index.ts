@@ -6,9 +6,12 @@ import AESCrypto from './AESCrypto'
 import { md5 } from './cryptoHelper'
 import { IpfsStore } from './ipfsStore'
 import { pgpCrypto } from './PgpCrypto'
+
+import * as testDb from './testDb'
 import * as testEncruption from './testEncryption'
 
 testEncruption.start()
+testDb.start()
 
 const masterAccountName = 'SDKHAAERX2W2XXEWRIV6DHAWGWCDY7IEAP4LVE765NQE7F44E6JPKC4K'
 const fileInfo = {
