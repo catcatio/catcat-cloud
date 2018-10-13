@@ -3,11 +3,13 @@ import {
   BelongsToMany,
   Column,
   CreatedAt,
+  DataType,
   DeletedAt,
   HasMany,
   Model,
   PrimaryKey,
   Table,
+  Unique,
   UpdatedAt
 } from 'sequelize-typescript'
 
@@ -25,14 +27,15 @@ export class Account extends Model<Account> {
   @Column
   public id: number
 
-  @Column
+  @Unique
+  @Column(DataType.TEXT)
   public userKey: string
 
-  @Column
-  public publicKey: string
+  @Column(DataType.TEXT)
+  public publicKeyArmored: string
 
-  @Column
-  public privateKey: string
+  @Column(DataType.TEXT)
+  public privateKeyArmored: string
 
   @HasMany(() => File, 'ownerId')
   public files: File[]

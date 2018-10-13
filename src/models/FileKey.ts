@@ -4,6 +4,7 @@ import {
   BelongsToMany,
   Column,
   CreatedAt,
+  DataType,
   DeletedAt,
   ForeignKey,
   Model,
@@ -25,7 +26,7 @@ export class FileKey extends Model<FileKey> {
   @Column
   public id: number
 
-  @Column
+  @Column(DataType.TEXT)
   public encryptedValue: string
 
   @ForeignKey(() => Account)

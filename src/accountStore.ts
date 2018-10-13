@@ -40,7 +40,8 @@ export interface IAccountStore {
 }
 
 export interface IAccount {
-  key: openpgp.key.Key;
+  id: number;
+  userKey: string;
   publicKeyArmored: string;
   privateKeyArmored: string;
 }
