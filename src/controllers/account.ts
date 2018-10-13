@@ -1,18 +1,8 @@
-import { IAccount } from '../accountStore'
 import { Account } from '../models'
 
-const toIAccount = (account: Account): IAccount => {
-  return {
-    id: account.id,
-    userKey: account.userKey,
-    privateKeyArmored: account.privateKeyArmored,
-    publicKeyArmored: account.publicKeyArmored
-  }
-}
-
-const getById = async (id: number, scope: string = null as any): Promise<IAccount | null> => {
+const getById = async (id: number, scope: string = null as any): Promise<Account | null> => {
   const account = await Account.scope(scope).findById(id)
-  return account ? toIAccount(account) : null
+  return account || null
 }
 
 const getByUserKey = async (userKey: string, scope: string = null as any): Promise<Account | null> => {

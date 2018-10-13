@@ -1,9 +1,9 @@
 # catcat-cloud
 
-- [ ] Change MongoDB to PostgreSql
-- [ ] Producer submit a file https://github.com/ipfs/js-ipfs-api
-- [ ] Consumer subscribe a file
+- [X] Change MongoDB to PostgreSql
+- [X] Producer submit a file https://github.com/ipfs/js-ipfs-api
+- [X] Consumer subscribe a file
 - [ ] Producer remove a file
-- [ ] Producer update a file
-- [ ] Producer revoke consumer
+- [X] Producer update a file
+- [X] Producer revoke consumer
 - [ ] Consumer unsubscribe a file

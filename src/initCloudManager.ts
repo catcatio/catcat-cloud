@@ -1,4 +1,4 @@
-import { CloudManager } from './cloudManager';
+import { CloudManager } from './cloudManager'
 import { IConfig } from './config'
 import { IpfsStore } from './ipfsStore'
 import { pgpCrypto } from './PgpCrypto'

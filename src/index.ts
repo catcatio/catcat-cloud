@@ -6,5 +6,6 @@ const server = Server(config)
 
 server.start()
   .catch(err => {
-    console.error('main', err)
+    console.error('main', err.message)
+    console.error('err')
   })
