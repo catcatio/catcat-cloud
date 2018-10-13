@@ -1,21 +1,17 @@
-import { IAccount, IAccountStore } from './accountStore'
-import AESCrypto, { default as AesCrypto } from './AESCrypto'
-import { IConfig } from './config'
+import { default as AesCrypto } from './AESCrypto'
 import { IIpfsStore } from './ipfsStore'
 import { IPgpCrypto } from './PgpCrypto'
 
 import accountController from './controllers/account'
 import fileController from './controllers/file'
 import fileKeyController from './controllers/filekey'
-import fileKeyAccountController from './controllers/filekeyAccount'
 
-import { Account, File, FileKey, FileKeyAccount } from './models'
+import { Account, FileKey } from './models'
 
 export const CloudManager = (
   pgpCrypto: IPgpCrypto,
   masterAccountUserKey: string,
-  ipfsStore: IIpfsStore,
-  config: IConfig) => {
+  ipfsStore: IIpfsStore) => {
 
   let internalMasterAccount: Account
   const getMasterAccount = async () => internalMasterAccount ||
@@ -85,8 +81,6 @@ export const CloudManager = (
   }
 
   const downloadFile = async (fileId, downloaderUserKey) => {
-    // get or create account
-    const masterAccount = await getMasterAccount()
     const downloadAccount = await getOrCreateUser(downloaderUserKey)
     const MemoryStream = require('memory-stream')
     const ms = new MemoryStream()

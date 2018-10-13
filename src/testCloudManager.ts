@@ -15,7 +15,7 @@ export const start = async () => {
   const masterAccountUserKey = 'SDKHAAERX2W2XXEWRIV6DHAWGWCDY7IEAP4LVE765NQE7F44E6JPKC4K'
   const ipfsStore = IpfsStore()
   const config: IConfig = null as any
-  const cloudManager = CloudManager(pgpCrypto, masterAccountUserKey, ipfsStore, config)
+  const cloudManager = CloudManager(pgpCrypto, masterAccountUserKey, ipfsStore)
 
   const ownerUserKey = 'FILE_OWNER'
   // upload file, private
