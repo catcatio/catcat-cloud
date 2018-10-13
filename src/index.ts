@@ -1,13 +1,10 @@
-import * as testCloudManager from './testCloudManager'
-import * as testDb from './testDb'
-import * as testEncruption from './testEncryption'
-import * as testIpfs from './testIpfs'
+import 'dotenv/config'
 
-testEncruption.start()
-testDb.start()
+import { config } from './config'
+import { Server } from './server'
+const server = Server(config)
 
-testIpfs.start()
-  .then(console.log)
-  .catch(console.error)
-
-testCloudManager.start()
+server.start()
+  .catch(err => {
+    console.error('main', err)
+  })

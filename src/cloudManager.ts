@@ -1,3 +1,5 @@
+import { Readable } from 'stream'
+
 import { default as AesCrypto } from './AESCrypto'
 import { IIpfsStore } from './ipfsStore'
 import { IPgpCrypto } from './PgpCrypto'
@@ -7,17 +9,18 @@ import fileController from './controllers/file'
 import fileKeyController from './controllers/filekey'
 
 import { Account, FileKey } from './models'
+import { bufferToStream } from './utils/buffer'
 
 export const CloudManager = (
   pgpCrypto: IPgpCrypto,
   masterAccountUserKey: string,
-  ipfsStore: IIpfsStore) => {
+  ipfsStore: IIpfsStore): ICloudManager => {
 
   let internalMasterAccount: Account
   const getMasterAccount = async () => internalMasterAccount ||
     (internalMasterAccount = await getOrCreateUser(masterAccountUserKey))
 
-  const getOrCreateUser = async (userKey) => {
+  const getOrCreateUser = async (userKey: string): Promise<Account> => {
     const account = await accountController.getByUserKey(userKey)
 
     if (account) {
@@ -38,7 +41,7 @@ export const CloudManager = (
     content: NodeJS.ReadableStream,
     fullPath: string,
     isPublic: boolean,
-    ownerUserKey: string) => {
+    ownerUserKey: string)  => {
 
     // get or create account
     const masterAccount = await getMasterAccount()
@@ -80,10 +83,9 @@ export const CloudManager = (
     }
   }
 
-  const downloadFile = async (fileId, downloaderUserKey) => {
+  const downloadFile = async (fileId: string, downloaderUserKey: string): Promise<{content: Readable}> => {
     const downloadAccount = await getOrCreateUser(downloaderUserKey)
-    const MemoryStream = require('memory-stream')
-    const ms = new MemoryStream()
+    let content: Readable
 
     const file = await fileController.getById(fileId, 'full')
     if (!file) {
@@ -93,32 +95,35 @@ export const CloudManager = (
     if (!file.fileKeyId) {
       const ipfsGetResult = (await ipfsStore.get(`/ipfs/${file.ipfsHash}`))
       if (ipfsGetResult[0].content instanceof Buffer) {
-        ms.write(ipfsGetResult[0].content)
+        content = bufferToStream(ipfsGetResult[0].content)
       } else {
-        ipfsGetResult[0].content.pipe(ms)
+        content = ipfsGetResult[0].content.pipe
       }
     } else {
       const decryptedFileKey = await pgpCrypto.decrypt(file.fileKey.encryptedValue, downloadAccount)
       const fileDescryptor = AesCrypto(decryptedFileKey)
       const ipfsGetResult = (await ipfsStore.get(`/ipfs/${file.ipfsHash}`))
       if (ipfsGetResult[0].content instanceof Buffer) {
-        ms.write(fileDescryptor.decrypt(ipfsGetResult[0].content))
+        content = bufferToStream(fileDescryptor.decrypt(ipfsGetResult[0].content))
       } else {
-        ipfsGetResult[0].content.pipe(fileDescryptor.decryptStream())
-          .pipe(ms)
+        content = ipfsGetResult[0].content.pipe(fileDescryptor.decryptStream())
       }
     }
 
     return {
-      content: ms
+      content
     }
   }
 
-  const grantAccessPermission = async (fileId, grantToUserKey) => {
+  const grantAccessPermission = async (fileId: string, requester: string, grantToUserKey: string): Promise<boolean> => {
     const file = await fileController.getById(fileId, 'signing')
 
     if (!file) {
       throw new Error('File not found')
+    }
+
+    if (file.owner.userKey !== requester) {
+      throw new Error('Unauthorized')
     }
 
     if (!file.fileKey) {
@@ -129,6 +134,7 @@ export const CloudManager = (
     const masterAccount = await getMasterAccount()
     const grantToAccount = await getOrCreateUser(grantToUserKey)
     const filekey = file.fileKey
+
     const decryptedFileKey = await pgpCrypto.decrypt(filekey.encryptedValue, file.fileKey.owner)
     const signingAccount = filekey.signedBy.concat([grantToAccount])
     const encryptedFileKey = await pgpCrypto.encrypt(decryptedFileKey, masterAccount, filekey.owner, ...signingAccount)
@@ -137,14 +143,18 @@ export const CloudManager = (
     filekey.encryptedValue = encryptedFileKey
     await filekey.save()
     await filekey.$add('signedBy', signingAccount)
-    return null
+    return true
   }
 
-  const revokeAccessPermission = async (fileId, revokeFromUserKey) => {
+  const revokeAccessPermission = async (fileId: string, requester: string, revokeFromUserKey: string) => {
     const file = await fileController.getById(fileId, 'signing')
 
     if (!file) {
       throw new Error('File not found')
+    }
+
+    if (file.owner.userKey !== requester) {
+      throw new Error('Unauthorized')
     }
 
     if (!file.fileKey) {
@@ -162,10 +172,10 @@ export const CloudManager = (
     filekey.encryptedValue = encryptedFileKey
     await filekey.save()
     await filekey.$set('signedBy', signingAccount)
-    return null
+    return true
   }
 
-  const getUploadedFiles = async (userKey) => {
+  const getUploadedFiles = async (userKey: string) => {
     const account = await accountController.getByUserKey(userKey, 'uploaded')
 
     if (!account) {
@@ -173,12 +183,11 @@ export const CloudManager = (
     }
 
     return account.files.map(file => ({
-      id: file.id,
-      fullpath: file.fullPath
+      id: file.id
     }))
   }
 
-  const getPermissionedFile = async (userKey) => {
+  const getPermissionedFile = async (userKey: string) => {
     const account = await accountController.getByUserKey(userKey, 'permissioned')
 
     if (!account) {
@@ -186,14 +195,11 @@ export const CloudManager = (
     }
 
     return account.signedFileKey.map(filekey => ({
-      id: filekey.file.id,
-      fullpath: filekey.file.fullPath,
-      owner: filekey.file.ownerId
+      id: filekey.file.id
     }))
   }
 
   return {
-    getOrCreateUser,
     uploadFile,
     downloadFile,
     grantAccessPermission,
@@ -203,18 +209,11 @@ export const CloudManager = (
   }
 }
 
-export interface IObjectInfo {
-  content: any,
-
-}
-
 export interface ICloudManager {
-  registerUser: any;
-  getOrCreateUser: any;
-  uploadFile: any;
-  downloadFile: any;
-  grantAccessPermission: any;
-  revokeAccessPermission: any;
-  getUploadedFile: any;
-  getPermissionedFile: any
+  uploadFile(content: NodeJS.ReadableStream, fullPath: string, isPublic: boolean, ownerUserKey: string): Promise<any>;
+  downloadFile(fileId: string, downloaderUserKey: string): Promise<{content: Readable}>;
+  grantAccessPermission(fileId: string, requester: string, grantToUserKey: string): Promise<boolean>;
+  revokeAccessPermission(fileId: string, requester: string, revokeFromUserKey: string): Promise<any>;
+  getUploadedFiles(userKey: string): Promise<any>;
+  getPermissionedFile(userKey: string): Promise<any>;
 }

@@ -1,13 +1,14 @@
 import * as ipfsAPI from 'ipfs-api'
+import { IIpfsConfig } from './config'
 
-export const IpfsStore = ({ host = 'localhost', port = '5001', protocol = 'http' } = {}) => {
+export const IpfsStore = (ipfsConfig: IIpfsConfig) => {
   const add = (data) => {
-    const ipfs = ipfsAPI({ host, port, protocol })
+    const ipfs = ipfsAPI(ipfsConfig)
     return ipfs.files.add(data)
   }
 
   const get = (ipfsPath) => {
-    const ipfs = ipfsAPI({ host, port, protocol })
+    const ipfs = ipfsAPI(ipfsConfig)
     return ipfs.files.get(ipfsPath)
   }
 
@@ -20,10 +21,4 @@ export const IpfsStore = ({ host = 'localhost', port = '5001', protocol = 'http'
 export interface IIpfsStore {
   add: any;
   get: any;
-}
-
-export interface IIpfsConfig {
-  host: string;
-  port: string;
-  protocol: string;
 }

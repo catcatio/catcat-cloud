@@ -1,21 +1,18 @@
 import { Sequelize } from 'sequelize-typescript'
 
+import { IConfig } from './config'
 import { Account, File, FileKey, FileKeyAccount } from './models'
 
-export default async () => {
-  const option: any = {
-    name: 'catca-cloud',
-    dialect: 'postgres',
-    host: 'localhost',
-    username: 'root',
-    password: 'password',
+export default async (config: IConfig) => {
+  console.log('initial Sequelize')
+  const defaultConfig = {
     modelPaths: [FileKeyAccount, FileKey, File, Account],
-    // modelPaths: [__dirname + '/models/!(index)*.ts'],
     operatorsAliases: Sequelize.Op as any,
     logging: false,
   }
+  const option: any = Object.assign({}, defaultConfig, config.sequelizeConfig)
 
   const sequelize = new Sequelize(option)
-  console.log(await sequelize.databaseVersion())
+  console.log('Sequelize initialized: ', await sequelize.databaseVersion())
   return sequelize
 }
