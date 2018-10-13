@@ -7,6 +7,7 @@ import {
   DataType,
   DeletedAt,
   ForeignKey,
+  HasOne,
   Model,
   PrimaryKey,
   Table,
@@ -14,6 +15,7 @@ import {
 } from 'sequelize-typescript'
 
 import { Account } from './Account'
+import { File } from './File'
 import { FileKeyAccount } from './FileKeyAccount'
 
 @Table({
@@ -38,6 +40,9 @@ export class FileKey extends Model<FileKey> {
 
   @BelongsToMany(() => Account, () => FileKeyAccount)
   public signedBy: Account[]
+
+  @HasOne(() => File, 'fileKeyId')
+  public file: File
 
   @CreatedAt
   public creationDate: Date

@@ -10,7 +10,7 @@ export const start = async () => {
   console.log('go cloud manager')
   const sequelize = await initSequelize()
   // cleanup db
-  // await sequelize.sync({force: true})
+  await sequelize.sync({ force: true })
 
   const masterAccountUserKey = 'SDKHAAERX2W2XXEWRIV6DHAWGWCDY7IEAP4LVE765NQE7F44E6JPKC4K'
   const ipfsStore = IpfsStore()
@@ -21,17 +21,22 @@ export const start = async () => {
   // upload file, private
   const uploadedPrivateFile = await cloudManager.uploadFile(
     sts('This is an awesome private text file\0'),
-    '/root/fileText',
-     false,
-     ownerUserKey)
+    '/root/file_private',
+    false,
+    ownerUserKey)
+  const uploadedPrivateFile2 = await cloudManager.uploadFile(
+    sts('This is an awesome private text file XX\0'),
+    '/root/file_private2',
+    false,
+    ownerUserKey)
   console.log(uploadedPrivateFile)
 
   // upload file, private
   const uploadedPublicFile = await cloudManager.uploadFile(
     sts('This is an awesome public text file\0'),
-    '/root/fileText',
-     true,
-     ownerUserKey)
+    '/root/file_public',
+    true,
+    ownerUserKey)
   console.log(uploadedPublicFile)
 
   const downloadOwnerPrivateResult = await cloudManager.downloadFile(uploadedPrivateFile.fileId, ownerUserKey)
@@ -66,6 +71,7 @@ export const start = async () => {
   await cloudManager.grantAccessPermission(privateFileId, downloaderUserKey2)
   await cloudManager.grantAccessPermission(privateFileId, downloaderUserKey3)
   await cloudManager.grantAccessPermission(privateFileId, downloaderUserKey4)
+  await cloudManager.grantAccessPermission(uploadedPrivateFile2.fileId, downloaderUserKey4)
   const downloadResult3 = await cloudManager.downloadFile(privateFileId, downloaderUserKey2)
     .catch(err => ({ content: err.message }))
   console.log(downloaderUserKey2, downloadResult3.content.toString())
@@ -74,4 +80,16 @@ export const start = async () => {
   const downloadResult4 = await cloudManager.downloadFile(privateFileId, downloaderUserKey2)
     .catch(err => ({ content: err.message }))
   console.log(downloaderUserKey2, downloadResult4.content.toString())
+
+  const uploadedFile = await cloudManager.getUploadedFiles(ownerUserKey)
+  console.log('uploadedFile', ownerUserKey, '\n', uploadedFile)
+
+  const permissionedFile = await cloudManager.getPermissionedFile(downloaderUserKey4)
+  console.log('permissionedFile', downloaderUserKey4, '\n', permissionedFile)
+
+  const uploadedFile2 = await cloudManager.getUploadedFiles(downloaderUserKey2)
+  console.log('uploadedFile', downloaderUserKey2, '\n', uploadedFile2)
+
+  const permissionedFile2 = await cloudManager.getPermissionedFile(downloaderUserKey2)
+  console.log('permissionedFile', downloaderUserKey2, '\n', permissionedFile2)
 }

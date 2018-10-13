@@ -9,7 +9,7 @@ import { FileKey } from './FileKey'
 export class FileKeyAccount extends Model<FileKeyAccount> {
   @ForeignKey(() => FileKey)
   @Column
-  public fileKeyId: number
+  public fileKeyId: string
 
   @ForeignKey(() => Account)
   @Column

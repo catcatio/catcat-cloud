@@ -165,12 +165,41 @@ export const CloudManager = (
     return null
   }
 
+  const getUploadedFiles = async (userKey) => {
+    const account = await accountController.getByUserKey(userKey, 'uploaded')
+
+    if (!account) {
+      throw new Error('User not found')
+    }
+
+    return account.files.map(file => ({
+      id: file.id,
+      fullpath: file.fullPath
+    }))
+  }
+
+  const getPermissionedFile = async (userKey) => {
+    const account = await accountController.getByUserKey(userKey, 'permissioned')
+
+    if (!account) {
+      throw new Error('User not found')
+    }
+
+    return account.signedFileKey.map(filekey => ({
+      id: filekey.file.id,
+      fullpath: filekey.file.fullPath,
+      owner: filekey.file.ownerId
+    }))
+  }
+
   return {
     getOrCreateUser,
     uploadFile,
     downloadFile,
     grantAccessPermission,
-    revokeAccessPermission
+    revokeAccessPermission,
+    getUploadedFiles,
+    getPermissionedFile
   }
 }
 
@@ -185,5 +214,7 @@ export interface ICloudManager {
   uploadFile: any;
   downloadFile: any;
   grantAccessPermission: any;
-  revokeAccessPermission: any
+  revokeAccessPermission: any;
+  getUploadedFile: any;
+  getPermissionedFile: any
 }

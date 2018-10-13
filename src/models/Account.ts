@@ -8,6 +8,7 @@ import {
   HasMany,
   Model,
   PrimaryKey,
+  Scopes,
   Table,
   Unique,
   UpdatedAt
@@ -17,6 +18,22 @@ import { File } from './File'
 import { FileKey } from './FileKey'
 import { FileKeyAccount } from './FileKeyAccount'
 
+@Scopes({
+  permissioned: {
+    include: [
+      {
+        model: () => FileKey,
+        include: [{
+          model: () => File,
+          as: 'file'
+        }]
+      }
+    ]
+  },
+  uploaded: {
+    include: [() => File]
+  }
+})
 @Table({
   tableName: 'account',
   timestamps: true

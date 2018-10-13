@@ -10,13 +10,13 @@ const toIAccount = (account: Account): IAccount => {
   }
 }
 
-const getById = async (id: number): Promise<IAccount | null> => {
-  const account = await Account.findById(id)
+const getById = async (id: number, scope: string = null as any): Promise<IAccount | null> => {
+  const account = await Account.scope(scope).findById(id)
   return account ? toIAccount(account) : null
 }
 
-const getByUserKey = async (userKey: string): Promise<Account | null> => {
-  return await Account.findOne({ where: { userKey } })
+const getByUserKey = async (userKey: string, scope: string = null as any): Promise<Account | null> => {
+  return await Account.scope(scope).findOne({ where: { userKey } })
 }
 
 const create = async (userKey: string, publicKeyArmored: string, privateKeyArmored: string): Promise<Account> => {
