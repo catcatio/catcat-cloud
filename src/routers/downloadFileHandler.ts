@@ -8,7 +8,11 @@ export const handler = (cloudManager: ICloudManager): Router => {
   return Router().use(path, async (req, res) => {
     const { key, fileid } = req.params
     return cloudManager.downloadFile(fileid, key)
-      .then(response => response.content.pipe(res))
+      .then(({content, filename, mimetype}) => {
+        res.setHeader('Content-Disposition', 'attachment; filename=' + filename)
+        res.setHeader('Content-Type', mimetype)
+        content.pipe(res)
+      })
       .catch(err => res.status(400).send(err.message))
   })
 }

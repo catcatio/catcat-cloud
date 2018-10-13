@@ -40,6 +40,7 @@ export const CloudManager = (
   const uploadFile = async (
     content: NodeJS.ReadableStream,
     fullPath: string,
+    mimetype: string,
     isPublic: boolean,
     ownerUserKey: string)  => {
 
@@ -72,6 +73,7 @@ export const CloudManager = (
       ipfsResult[0].path,
       ipfsResult[0].size,
       fullPath,
+      mimetype,
       ownerAccount.id,
       storedFileKey ? storedFileKey.id : undefined)
 
@@ -83,7 +85,7 @@ export const CloudManager = (
     }
   }
 
-  const downloadFile = async (fileId: string, downloaderUserKey: string): Promise<{content: Readable}> => {
+  const downloadFile = async (fileId: string, downloaderUserKey: string): Promise<{content: Readable, filename: string, mimetype: string}> => {
     const downloadAccount = await getOrCreateUser(downloaderUserKey)
     let content: Readable
 
@@ -111,7 +113,9 @@ export const CloudManager = (
     }
 
     return {
-      content
+      content,
+      filename: file.fullPath,
+      mimetype: file.mimetype
     }
   }
 
@@ -210,8 +214,8 @@ export const CloudManager = (
 }
 
 export interface ICloudManager {
-  uploadFile(content: NodeJS.ReadableStream, fullPath: string, isPublic: boolean, ownerUserKey: string): Promise<any>;
-  downloadFile(fileId: string, downloaderUserKey: string): Promise<{content: Readable}>;
+  uploadFile(content: NodeJS.ReadableStream, fullPath: string, mimetype: string, isPublic: boolean, ownerUserKey: string): Promise<any>;
+  downloadFile(fileId: string, downloaderUserKey: string): Promise<{content: Readable, filename: string, mimetype: string}>;
   grantAccessPermission(fileId: string, requester: string, grantToUserKey: string): Promise<boolean>;
   revokeAccessPermission(fileId: string, requester: string, revokeFromUserKey: string): Promise<any>;
   getUploadedFiles(userKey: string): Promise<any>;

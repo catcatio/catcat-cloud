@@ -18,6 +18,7 @@ const create = async (
   ipfsPath: string,
   size: number,
   fullPath: string,
+  mimetype: string,
   ownerId: number,
   fileKeyId?: number
 ) => {
@@ -26,6 +27,7 @@ const create = async (
     ipfsPath,
     size,
     fullPath,
+    mimetype,
     ownerId,
     fileKeyId,
   })

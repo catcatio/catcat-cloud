@@ -64,6 +64,9 @@ export class File extends Model<File> {
   @Column
   public fullPath: string
 
+  @Column
+  public mimetype: string
+
   @ForeignKey(() => Account)
   @Column
   public ownerId: number
