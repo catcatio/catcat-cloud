@@ -68,7 +68,6 @@ __request:__
 
 `http://localhost:3000/75ec6c73f3580fbb3dc8dff2353a011d/grant/d9b07510-cd1c-4c7c-9a66-33e185d3ff62/a03d51bd7f225c03e47d176e362db56c`
 
-
 __response:__
 
 `200` `true`
@@ -89,7 +88,6 @@ __request:__
 `POST` `http://localhost:3000/${userKey}/revoke/${fileid}/${revokeFromUserKey}`
 
 `http://localhost:3000/75ec6c73f3580fbb3dc8dff2353a011d/revoke/d9b07510-cd1c-4c7c-9a66-33e185d3ff62/a03d51bd7f225c03e47d176e362db56c`
-
 
 __response:__
 
@@ -112,7 +110,6 @@ __request:__
 
 `http://localhost:3000/75ec6c73f3580fbb3dc8dff2353a011d/uploaded`
 
-
 __response:__
 
 `200`
@@ -132,7 +129,6 @@ __request:__
 `POST` `http://localhost:3000/${userKey}/permissioned`
 
 `http://localhost:3000/a03d51bd7f225c03e47d176e362db56c/permissioned`
-
 
 __response:__
 
@@ -158,6 +154,8 @@ docker-compose up   # start db and ipfs nodes
 
 npm run dev         # start development server
 ```
+
+_note:_ after start a db container, create a new database as specified in `.env`, i.e. `catcat-cloud`.
 
 open `upload.html` in browser to start uploading a file
 
