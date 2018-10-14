@@ -155,7 +155,13 @@ docker-compose up   # start db and ipfs nodes
 npm run dev         # start development server
 ```
 
-_note:_ after start a db container, create a new database as specified in `.env`, i.e. `catcat-cloud`.
+_Note:_
+> after start a db container, create a new database as specified in `.env`, i.e. `catcat-cloud`.
+
+>pgAdminweb ui: http://localhost:8083
+username: `user@example.com`
+password: `password`
+
 
 open `upload.html` in browser to start uploading a file
 
