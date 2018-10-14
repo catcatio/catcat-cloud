@@ -39,7 +39,7 @@ export const CloudManager = (
 
   const uploadFile = async (
     content: NodeJS.ReadableStream,
-    fullPath: string,
+    filename: string,
     mimetype: string,
     isPublic: boolean,
     ownerUserKey: string)  => {
@@ -72,7 +72,7 @@ export const CloudManager = (
       ipfsResult[0].hash,
       ipfsResult[0].path,
       ipfsResult[0].size,
-      fullPath,
+      filename,
       mimetype,
       ownerAccount.id,
       storedFileKey ? storedFileKey.id : undefined)
@@ -114,7 +114,7 @@ export const CloudManager = (
 
     return {
       content,
-      filename: file.fullPath,
+      filename: file.filename,
       mimetype: file.mimetype
     }
   }
@@ -214,7 +214,7 @@ export const CloudManager = (
 }
 
 export interface ICloudManager {
-  uploadFile(content: NodeJS.ReadableStream, fullPath: string, mimetype: string, isPublic: boolean, ownerUserKey: string): Promise<any>;
+  uploadFile(content: NodeJS.ReadableStream, filename: string, mimetype: string, isPublic: boolean, ownerUserKey: string): Promise<any>;
   downloadFile(fileId: string, downloaderUserKey: string): Promise<{content: Readable, filename: string, mimetype: string}>;
   grantAccessPermission(fileId: string, requester: string, grantToUserKey: string): Promise<boolean>;
   revokeAccessPermission(fileId: string, requester: string, revokeFromUserKey: string): Promise<any>;

@@ -13,7 +13,8 @@ export const Server = (config: IConfig) => {
     const app = await initExpress(config)
     app.use(router)
 
-    await sequelize.sync()
+    // TODO: Explicit commmand for updating schema
+    await sequelize.sync({force: true})
   }
 
   const stop = async () => {

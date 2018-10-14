@@ -62,7 +62,7 @@ export class File extends Model<File> {
   public size: number
 
   @Column
-  public fullPath: string
+  public filename: string
 
   @Column
   public mimetype: string

@@ -10,9 +10,8 @@ export const handler = (cloudManager: ICloudManager): Router => {
     console.log('Upload file ')
     const { key } = req.params
     const files = (req as any).files
-    const isPublic = req.query.isPublic === 'true'
 
-    console.log(files.upload)
+    const isPublic = req.query.isPublic === 'true'
 
     if (!files || !files.upload) {
       return res.status(400).send('No files were uploaded.')

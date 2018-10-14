@@ -9,15 +9,11 @@ const getById = async (id: string, scope: string = null as any) => {
   return File.scope(scope).findById(id)
 }
 
-const getByFullPath = async (fullPath: string): Promise<File | null> => {
-  return await File.findOne({ where: { fullPath } })
-}
-
 const create = async (
   ipfsHash: string,
   ipfsPath: string,
   size: number,
-  fullPath: string,
+  filename: string,
   mimetype: string,
   ownerId: number,
   fileKeyId?: number
@@ -26,7 +22,7 @@ const create = async (
     ipfsHash,
     ipfsPath,
     size,
-    fullPath,
+    filename,
     mimetype,
     ownerId,
     fileKeyId,
@@ -44,7 +40,6 @@ const doDelete = async () => {
 export default {
   list,
   getById,
-  getByFullPath,
   create,
   update,
   delete: doDelete

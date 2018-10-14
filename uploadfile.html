@@ -1,12 +1,89 @@
 <html>
-	<body>
-		<form ref='uploadForm'
-			id='uploadForm'
-			action='http://localhost:3000/thisisuserid/upload'
-			method='post'
-			encType="multipart/form-data">
-				<input type="file" name="upload" />
-				<input type='submit' value='Upload!' />
-		</form>
-	</body>
+
+<head>
+	<style>
+		#uploadForm {
+			margin: 20px
+		}
+		#result {
+			margin: 20px
+		}
+		div * {
+			margin-top: 10px;
+		}
+
+	</style>
+</head>
+
+<body>
+	<div id='uploadForm'>
+		User Key: &nbsp;<input id="userKey" type="text" value="75ec6c73f3580fbb3dc8dff2353a011d" /><br>
+		<input id="fileinput" type="file" name="upload" /><br>
+		<input id="uploadbtn" type="button" value="Upload !!" onclick="upload(input.files[0])" /><br>
+	</div>
+	<div id="result">
+		<code id='response'></code>
+		<div id='downloadlink'></div>
+		<div id='files'></div>
+	</div>
+	<script>
+		var input = document.getElementById('fileinput')
+		var response = document.getElementById('response')
+		var downloadlink = document.getElementById('downloadlink')
+		var files = document.getElementById('files')
+
+		function upload(file) {
+			var userKey = document.getElementById('userKey').value
+			var url = ['http://localhost:3000/', userKey, '/upload'].join('')
+			var data = new FormData()
+			data.append('upload', file)
+
+			fetch(url, {
+				method: 'POST',
+				body: data
+			}).then(res => {
+				if (res.status === 200) {
+					res.json().then(json => {
+						response.innerText = JSON.stringify(json, null, 2)
+						const downloadUrl = ['http://localhost:3000/', userKey, '/download/', json.fileId].join('')
+						downloadlink.innerHTML = `<a href="${downloadUrl}">download</a>`
+					})
+				} else {
+					res.text().then(text => response.innerText = text)
+				}
+
+				showAllFile()
+			}).catch(
+				error => console.log(error)
+			);
+		}
+
+		function showAllFile() {
+			var userKey = document.getElementById('userKey').value
+			var url = ['http://localhost:3000/', userKey, '/uploaded'].join('')
+
+			fetch(url, {
+				method: 'GET',
+			}).then(res => {
+				if (res.status === 200) {
+					res.json().then(json => {
+						// response.innerText = JSON.stringify(json, null, 2)
+						const downloadUrl = ['http://localhost:3000/', userKey, '/download/', json.fileId].join('')
+						// downloadlink.innerHTML = `<a href="${downloadUrl}">download</a>`
+						files.innerHTML = json.map(j => {
+							const downloadUrl = ['http://localhost:3000/', userKey, '/download/', j.id].join('')
+							return `<a href="${downloadUrl}">${j.id}</a><br>`
+						}).join('')
+						console.log(json)
+					})
+				} else {
+					res.text().then(text => files.innerText = text)
+				}
+			}).catch(
+				error => console.log(error) // Handle the error response object
+			);
+		}
+	</script>
+</body>
+
 </html>
