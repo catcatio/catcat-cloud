@@ -8,9 +8,9 @@ An ipfs file management
 
 __request:__
 
-`POST` `http://localhost:3000/${userKey}/upload`
+`POST` `http://localhost:9086/${userKey}/upload`
 
-`http://localhost:3000/75ec6c73f3580fbb3dc8dff2353a011d/upload`
+`http://localhost:9086/75ec6c73f3580fbb3dc8dff2353a011d/upload`
 
 __response:__
 
@@ -29,9 +29,9 @@ A public file can be download by any user
 
 __request:__
 
-`POST` `http://localhost:3000/${userKey}/upload?isPublic=true`
+`POST` `http://localhost:9086/${userKey}/upload?isPublic=true`
 
-`http://localhost:3000/75ec6c73f3580fbb3dc8dff2353a011d/upload?isPublic=true`
+`http://localhost:9086/75ec6c73f3580fbb3dc8dff2353a011d/upload?isPublic=true`
 
 __response:__
 
@@ -48,9 +48,9 @@ __response:__
 
 __request:__
 
-`GET` `http://localhost:3000/${userKey}/download/${fileid}`
+`GET` `http://localhost:9086/${userKey}/download/${fileid}`
 
-`http://localhost:3000/75ec6c73f3580fbb3dc8dff2353a011d/download/d9b07510-cd1c-4c7c-9a66-33e185d3ff62`
+`http://localhost:9086/75ec6c73f3580fbb3dc8dff2353a011d/download/d9b07510-cd1c-4c7c-9a66-33e185d3ff62`
 
 ``
 
@@ -64,9 +64,9 @@ __response:__
 
 __request:__
 
-`GET` `http://localhost:3000/${userKey}/grant/${fileid}/${grantToUserKey}`
+`GET` `http://localhost:9086/${userKey}/grant/${fileid}/${grantToUserKey}`
 
-`http://localhost:3000/75ec6c73f3580fbb3dc8dff2353a011d/grant/d9b07510-cd1c-4c7c-9a66-33e185d3ff62/a03d51bd7f225c03e47d176e362db56c`
+`http://localhost:9086/75ec6c73f3580fbb3dc8dff2353a011d/grant/d9b07510-cd1c-4c7c-9a66-33e185d3ff62/a03d51bd7f225c03e47d176e362db56c`
 
 __response:__
 
@@ -79,15 +79,15 @@ __response:__
 `400` `File is public`
 
 Granted user can download the file via download url
-`http://localhost:3000/a03d51bd7f225c03e47d176e362db56c/download/d9b07510-cd1c-4c7c-9a66-33e185d3ff62`
+`http://localhost:9086/a03d51bd7f225c03e47d176e362db56c/download/d9b07510-cd1c-4c7c-9a66-33e185d3ff62`
 
 ### Revoke permission from user
 
 __request:__
 
-`GET` `http://localhost:3000/${userKey}/revoke/${fileid}/${revokeFromUserKey}`
+`GET` `http://localhost:9086/${userKey}/revoke/${fileid}/${revokeFromUserKey}`
 
-`http://localhost:3000/75ec6c73f3580fbb3dc8dff2353a011d/revoke/d9b07510-cd1c-4c7c-9a66-33e185d3ff62/a03d51bd7f225c03e47d176e362db56c`
+`http://localhost:9086/75ec6c73f3580fbb3dc8dff2353a011d/revoke/d9b07510-cd1c-4c7c-9a66-33e185d3ff62/a03d51bd7f225c03e47d176e362db56c`
 
 __response:__
 
@@ -100,15 +100,15 @@ __response:__
 `400` `File is public`
 
 Revoked user cannot download the file via download url
-`http://localhost:3000/a03d51bd7f225c03e47d176e362db56c/download/d9b07510-cd1c-4c7c-9a66-33e185d3ff62`
+`http://localhost:9086/a03d51bd7f225c03e47d176e362db56c/download/d9b07510-cd1c-4c7c-9a66-33e185d3ff62`
 
 ### List uploaded files
 
 __request:__
 
-`GET` `http://localhost:3000/${userKey}/uploaded`
+`GET` `http://localhost:9086/${userKey}/uploaded`
 
-`http://localhost:3000/75ec6c73f3580fbb3dc8dff2353a011d/uploaded`
+`http://localhost:9086/75ec6c73f3580fbb3dc8dff2353a011d/uploaded`
 
 __response:__
 
@@ -126,9 +126,9 @@ __response:__
 
 __request:__
 
-`GET` `http://localhost:3000/${userKey}/permissioned`
+`GET` `http://localhost:9086/${userKey}/permissioned`
 
-`http://localhost:3000/a03d51bd7f225c03e47d176e362db56c/permissioned`
+`http://localhost:9086/a03d51bd7f225c03e47d176e362db56c/permissioned`
 
 __response:__
 
@@ -148,22 +148,20 @@ create a `.env` file, see `.env.sample`
 
 ```bash
 
-npm i               # install dependencies
+mkdir pg_data       # storing data files for postgres
 
 docker-compose up   # start db and ipfs nodes
 
-npm run dev         # start development server
 ```
 
 _Note:_
-> after start a db container, create a new database as specified in `.env`, i.e. `catcat-cloud`.
 
->pgAdminweb ui: http://localhost:8083
+>pgAdminweb ui: http://localhost:9087
 username: `user@example.com`
 password: `password`
 
 
-open `upload.html` in browser to start uploading a file
+open `http://localhost:9086/uploadfile.html` in browser to start uploading a file
 
 ## TODO
 
@@ -176,3 +174,5 @@ open `upload.html` in browser to start uploading a file
 - [ ] Consumer unsubscribe a file
 - [ ] Able to PIN / UNPIN ipfs file
 - [ ] Manageable folder structure
+- [ ] Support API key for security
+
