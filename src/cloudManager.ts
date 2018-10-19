@@ -7,8 +7,9 @@ import { IPgpCrypto } from './PgpCrypto'
 import accountController from './controllers/account'
 import fileController from './controllers/file'
 import fileKeyController from './controllers/filekey'
+import versionController from './controllers/version'
 
-import { Account, FileKey } from './models'
+import { Account, FileKey, schemaVersion } from './models'
 import { bufferToStream } from './utils/buffer'
 
 export const CloudManager = (
@@ -42,7 +43,7 @@ export const CloudManager = (
     filename: string,
     mimetype: string,
     isPublic: boolean,
-    ownerUserKey: string)  => {
+    ownerUserKey: string) => {
 
     // get or create account
     const masterAccount = await getMasterAccount()
@@ -85,7 +86,7 @@ export const CloudManager = (
     }
   }
 
-  const downloadFile = async (fileId: string, downloaderUserKey: string): Promise<{content: Readable, filename: string, mimetype: string}> => {
+  const downloadFile = async (fileId: string, downloaderUserKey: string): Promise<{ content: Readable, filename: string, mimetype: string }> => {
     const downloadAccount = await getOrCreateUser(downloaderUserKey)
     let content: Readable
 
@@ -203,21 +204,44 @@ export const CloudManager = (
     }))
   }
 
+  const getCurrentSchemaVersion = async () => {
+    return schemaVersion
+  }
+
+  const getLiveSchemaVersion = async () => {
+    const version = await versionController.getSchemaVersion()
+      .catch(err => {
+        console.log(err.message)
+        return { value: '' }
+      })
+    return version ? version.value : ''
+  }
+
+  const updateSchemaVersion = async (newSchemaVersion: string) => {
+    return versionController.saveSchemaVersion(newSchemaVersion)
+  }
+
   return {
     uploadFile,
     downloadFile,
     grantAccessPermission,
     revokeAccessPermission,
     getUploadedFiles,
-    getPermissionedFile
+    getPermissionedFile,
+    getCurrentSchemaVersion,
+    getLiveSchemaVersion,
+    updateSchemaVersion
   }
 }
 
 export interface ICloudManager {
   uploadFile(content: NodeJS.ReadableStream, filename: string, mimetype: string, isPublic: boolean, ownerUserKey: string): Promise<any>;
-  downloadFile(fileId: string, downloaderUserKey: string): Promise<{content: Readable, filename: string, mimetype: string}>;
+  downloadFile(fileId: string, downloaderUserKey: string): Promise<{ content: Readable, filename: string, mimetype: string }>;
   grantAccessPermission(fileId: string, requester: string, grantToUserKey: string): Promise<boolean>;
   revokeAccessPermission(fileId: string, requester: string, revokeFromUserKey: string): Promise<any>;
   getUploadedFiles(userKey: string): Promise<any>;
   getPermissionedFile(userKey: string): Promise<any>;
+  getCurrentSchemaVersion(): Promise<string>
+  getLiveSchemaVersion(): Promise<string>;
+  updateSchemaVersion(schemaVersion: string): Promise<any>;
 }

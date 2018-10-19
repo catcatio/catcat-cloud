@@ -14,7 +14,16 @@ export const Server = (config: IConfig) => {
     app.use(router)
 
     // TODO: Explicit commmand for updating schema
-    await sequelize.sync({force: true})
+    const currentSchemaVersion = await cloudManager.getCurrentSchemaVersion()
+    const liveSchemaVersion = await cloudManager.getLiveSchemaVersion()
+    console.log(`schema live: ${liveSchemaVersion}, current: ${currentSchemaVersion}`)
+    if (currentSchemaVersion !== liveSchemaVersion) {
+      console.log(`updating schema to ${currentSchemaVersion}`)
+      await sequelize.sync({force: true})
+      const updateResult = await cloudManager.updateSchemaVersion(currentSchemaVersion)
+      console.log(`schema updated to: ${updateResult ? updateResult.value : '???'}`)
+    }
+
   }
 
   const stop = async () => {
