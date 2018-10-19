@@ -175,3 +175,4 @@ open `upload.html` in browser to start uploading a file
 - [X] Producer revoke consumer
 - [ ] Consumer unsubscribe a file
 - [ ] Able to PIN / UNPIN ipfs file
+- [ ] Manageable folder structure

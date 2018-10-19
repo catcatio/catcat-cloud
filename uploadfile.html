@@ -35,7 +35,7 @@
 
 		function upload(file, isPublic) {
 			var userKey = document.getElementById('userKey').value
-			var url = ['http://localhost:3000/', userKey, '/upload?isPublic=', isPublic?'true':'false'].join('')
+			var url = ['http://localhost:9086/', userKey, '/upload?isPublic=', isPublic?'true':'false'].join('')
 			var data = new FormData()
 			data.append('upload', file)
 
@@ -46,7 +46,7 @@
 				if (res.status === 200) {
 					res.json().then(json => {
 						response.innerText = JSON.stringify(json, null, 2)
-						const downloadUrl = ['http://localhost:3000/', userKey, '/download/', json.fileId].join('')
+						const downloadUrl = ['http://localhost:9086/', userKey, '/download/', json.fileId].join('')
 						downloadlink.innerHTML = `<a href="${downloadUrl}">download</a>`
 					})
 				} else {
@@ -59,9 +59,14 @@
 			);
 		}
 
+		window.onload = function () {
+			console.log('onload')
+			showAllFile()
+		}
+
 		function showAllFile() {
 			var userKey = document.getElementById('userKey').value
-			var url = ['http://localhost:3000/', userKey, '/uploaded'].join('')
+			var url = ['http://localhost:9086/', userKey, '/uploaded'].join('')
 
 			fetch(url, {
 				method: 'GET',
@@ -69,10 +74,10 @@
 				if (res.status === 200) {
 					res.json().then(json => {
 						// response.innerText = JSON.stringify(json, null, 2)
-						const downloadUrl = ['http://localhost:3000/', userKey, '/download/', json.fileId].join('')
+						const downloadUrl = ['http://localhost:9086/', userKey, '/download/', json.fileId].join('')
 						// downloadlink.innerHTML = `<a href="${downloadUrl}">download</a>`
 						files.innerHTML = json.map(j => {
-							const downloadUrl = ['http://localhost:3000/', userKey, '/download/', j.id].join('')
+							const downloadUrl = ['http://localhost:9086/', userKey, '/download/', j.id].join('')
 							return `<a href="${downloadUrl}">${j.id}</a><br>`
 						}).join('')
 						console.log(json)
