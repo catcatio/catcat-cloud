@@ -54,6 +54,3 @@ services:
       - postgres
     command: npm run dev:docker
 
-volumes:
-  pgdata:
-
