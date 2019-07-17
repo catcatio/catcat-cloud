@@ -1,15 +1,15 @@
-import * as ipfsAPI from 'ipfs-api'
+import * as ipfsClient from 'ipfs-http-client'
 import { IIpfsConfig } from './config'
 
 export const IpfsStore = (ipfsConfig: IIpfsConfig) => {
   const add = (data) => {
-    const ipfs = ipfsAPI(ipfsConfig)
-    return ipfs.files.add(data)
+    const ipfs = ipfsClient(ipfsConfig)
+    return ipfs.add(data)
   }
 
   const get = (ipfsPath) => {
-    const ipfs = ipfsAPI(ipfsConfig)
-    return ipfs.files.get(ipfsPath)
+    const ipfs = ipfsClient(ipfsConfig)
+    return ipfs.get(ipfsPath)
   }
 
   return {
