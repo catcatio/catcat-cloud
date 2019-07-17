@@ -1,7 +1,7 @@
 import { Version } from '../models/Version'
 
 const getSchemaVersion = async () => {
-  return await Version.findById('schema')
+  return await Version.findByPk('schema')
 }
 
 const saveSchemaVersion = async (schemaVersion) => {

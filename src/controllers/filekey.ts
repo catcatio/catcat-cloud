@@ -5,7 +5,7 @@ const list = async () => {
 }
 
 const getById = async (id: number) => {
-  return await FileKey.findById(id)
+  return await FileKey.findByPk(id)
 }
 
 const create = async (encryptedValue: string, ownerId: number) => {

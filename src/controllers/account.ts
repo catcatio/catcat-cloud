@@ -1,7 +1,7 @@
 import { Account } from '../models'
 
 const getById = async (id: number, scope: string = null as any): Promise<Account | null> => {
-  const account = await Account.scope(scope).findById(id)
+  const account = await Account.scope(scope).findByPk(id)
   return account || null
 }
 

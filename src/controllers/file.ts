@@ -5,8 +5,8 @@ const list = async () => {
 }
 
 const getById = async (id: string, scope: string = null as any) => {
-  // return File.findById(id, {include: [FileKey]})
-  return File.scope(scope).findById(id)
+  // return File.findByPk(id, {include: [FileKey]})
+  return File.scope(scope).findByPk(id)
 }
 
 const create = async (
